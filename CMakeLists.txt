@@ -4,5 +4,8 @@ project(mem)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(lru src/lru/main.c src/lru/stack.c)
-add_executable(fifo src/fifo/main.c)
+add_library(stack STATIC src/stack/stack.c)
+target_include_directories(stack PUBLIC ${PROJECT_SOURCE_DIR}/inc)
+
+add_executable(lru src/lru/main.c)
+target_link_libraries(lru PRIVATE stack)
