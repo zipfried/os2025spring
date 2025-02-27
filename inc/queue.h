@@ -21,4 +21,8 @@ int queue_push(queue_t *queue, int data);
 
 int queue_pop(queue_t *queue);
 
+int queue_find(queue_t *queue, int data);
+
+void queue_display(queue_t *queue);
+
 #endif // QUEUE_H
