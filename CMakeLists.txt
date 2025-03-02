@@ -15,3 +15,5 @@ target_link_libraries(lru PRIVATE stack)
 
 add_executable(fifo src/fifo/main.c)
 target_link_libraries(fifo PRIVATE queue)
+
+add_executable(malloc src/malloc/main.c)
