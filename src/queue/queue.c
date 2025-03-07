@@ -42,6 +42,7 @@ int queue_push(queue_t *queue, int data) {
 
   queue->buf[queue->tail] = data;
   queue->tail = (queue->tail + 1) % queue->capacity;
+  // head == tail after push, different cycle
   if (queue->head == queue->tail) {
     queue->is_same_cycle = 0;
   }
@@ -56,6 +57,7 @@ int queue_pop(queue_t *queue) {
 
   int data = queue->buf[queue->head];
   queue->head = (queue->head + 1) % queue->capacity;
+  // head == push after pop, same cycle
   if (queue->head == queue->tail) {
     queue->is_same_cycle = 1;
   }
