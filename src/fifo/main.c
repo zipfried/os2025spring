@@ -2,32 +2,47 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int main() {
-  const int FRAME_COUNT = 3;
-  queue_t queue;
-  queue_init(&queue, FRAME_COUNT);
+  const size_t TOTAL = 512;
+  const size_t PAGE = 16;
 
-  const int TEST_DATA[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3,
-                           0, 3, 2, 1, 2, 0, 1, 7, 0, 1};
-  const size_t TOTAL_COUNT = sizeof(TEST_DATA) / sizeof(int);
+  FILE *res = NULL;
+  res = fopen("fifo.txt", "w");
 
-  size_t err_count = 0;
-
-  for (size_t i = 0; i < TOTAL_COUNT; i++) {
-    int page = TEST_DATA[i];
-    int find = queue_find(&queue, page);
-    if (find == -1) {
-      printf("miss %d\n", page);
-      err_count++;
-      if (!queue_is_full(&queue)) {
-        queue_push(&queue, page);
-      } else {
-        queue_pop(&queue);
-        queue_push(&queue, page);
-      }
+  for (size_t i = 0; i < 10; i++) {
+    // generate test data
+    srand((unsigned)i);
+    int *requests = (int *)malloc(TOTAL * sizeof(int));
+    for (size_t j = 0; j < TOTAL; j++) {
+      requests[j] = rand() % 32;
     }
-    queue_display(&queue);
+
+    for (size_t capacity = 1; capacity <= PAGE; capacity++) {
+      queue_t queue;
+      queue_init(&queue, capacity);
+      size_t err = 0;
+
+      for (size_t j = 0; j < TOTAL; j++) {
+        int page = requests[j];
+        int find = queue_find(&queue, page);
+        if (find == -1) {
+          err++;
+          if (!queue_is_full(&queue)) {
+            queue_push(&queue, page);
+          } else {
+            queue_pop(&queue);
+            queue_push(&queue, page);
+          }
+        }
+      }
+      fprintf(res, "%.2f,", 100.0 * err / TOTAL);
+    }
+    fprintf(res, "\n");
   }
-  printf("%f\n", 100.0 * err_count / TOTAL_COUNT);
+
+  fclose(res);
+  return 0;
 }

@@ -2,36 +2,48 @@
 
 #include <stddef.h>
 #include <stdio.h>
-
-#define VERBOSE
+#include <stdlib.h>
 
 int main() {
-  const int FRAME_COUNT = 3;
-  stack_init(FRAME_COUNT);
+  const size_t TOTAL = 512;
+  const size_t PAGE = 16;
 
-  const int TEST_DATA[] = {7, 0, 1, 2, 0, 3, 0, 4, 2, 3,
-                           0, 3, 2, 1, 2, 0, 1, 7, 0, 1};
-  const size_t TOTAL_COUNT = sizeof(TEST_DATA) / sizeof(int);
+  FILE *res = NULL;
+  res = fopen("lru.txt", "w");
 
-  size_t err_count = 0;
-
-  for (size_t i = 0; i < TOTAL_COUNT; i++) {
-    int page = TEST_DATA[i];
-    int find = stack_find(page);
-    if (find == -1) {
-      err_count++;
-      if (!stack_is_full()) {
-        stack_push(page);
-      } else {
-        stack_pop_bottom();
-        stack_push(page);
-      }
-    } else {
-      stack_move_to_top(find);
+  for (size_t i = 0; i < 10; i++) {
+    // generate test data
+    srand((unsigned)i);
+    int *requests = (int *)malloc(TOTAL * sizeof(int));
+    for (size_t j = 0; j < TOTAL; j++) {
+      requests[j] = rand() % PAGE;
     }
-#ifdef VERBOSE
-    stack_display();
-#endif
+
+    for (size_t capacity = 1; capacity <= PAGE; capacity++) {
+      stack_init(capacity);
+      size_t err = 0;
+
+      for (size_t j = 0; j < TOTAL; j++) {
+        int page = requests[j];
+        int find = stack_find(page);
+        if (find == -1) {
+          err++;
+          if (!stack_is_full()) {
+            stack_push(page);
+          } else {
+            stack_pop_bottom();
+            stack_push(page);
+          }
+        } else {
+          stack_move_to_top(find);
+        }
+      }
+      fprintf(res, "%.2f,", 100.0 * err / TOTAL);
+    }
+    fprintf(res, "\n");
   }
-  printf("%f\n", 100.0 * err_count / TOTAL_COUNT);
+
+  fclose(res);
+
+  return 0;
 }
